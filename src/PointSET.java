@@ -2,6 +2,7 @@ import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.StdDraw;
 
+import java.util.Iterator;
 import java.util.TreeSet;
 
 /**
@@ -44,9 +45,7 @@ public class PointSET {
 
         //might not even need this clear
         StdDraw.clear();
-        //whats the scale for thise? Do I even need to set it?
-        StdDraw.setXscale(0, 32768);
-        StdDraw.setYscale(0, 32768);
+        StdDraw.setPenRadius(0.01);
         for (Point2D point: pointBinaryTree) {
             point.draw();
         }
@@ -62,24 +61,43 @@ public class PointSET {
     }
 
     // a nearest neighbor in the set to point p; null if the set is empty
+//    public Point2D nearest(Point2D p) {
+//        if(pointBinaryTree.isEmpty()){
+//            return null;
+//        }
+//
+//        Point2D ceilingPoint  = pointBinaryTree.ceiling(p); //returns first point greater than OR EQUAL TO current point
+//        Point2D lowerPoint = pointBinaryTree.lower(p); //returns first point strictly less than current point
+//
+//        Double closestPointDistance = Double.POSITIVE_INFINITY;
+//        Point2D closestNeighbor = null;
+//
+//        if(ceilingPoint != null){
+//            closestPointDistance = ceilingPoint.distanceTo(p);
+//            closestNeighbor = ceilingPoint;
+//        }
+//
+//        if(lowerPoint != null && lowerPoint.distanceTo(p) < closestPointDistance){
+//            closestNeighbor = lowerPoint;
+//        }
+//
+//        return closestNeighbor;
+//    }
+
+    // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
         if(pointBinaryTree.isEmpty()){
             return null;
         }
 
-        Point2D ceilingPoint  = pointBinaryTree.ceiling(p); //returns first point greater than OR EQUAL TO current point
-        Point2D lowerPoint = pointBinaryTree.lower(p); //returns first point strictly less than current point
-
         Double closestPointDistance = Double.POSITIVE_INFINITY;
         Point2D closestNeighbor = null;
 
-        if(ceilingPoint != null){
-            closestPointDistance = ceilingPoint.distanceTo(p);
-            closestNeighbor = ceilingPoint;
-        }
-
-        if(lowerPoint != null && lowerPoint.distanceTo(p) < closestPointDistance){
-            closestNeighbor = lowerPoint;
+        for (Point2D point: pointBinaryTree) {
+            if(point.distanceTo(p) < closestPointDistance){
+                closestPointDistance = point.distanceTo(p);
+                closestNeighbor = point;
+            }
         }
 
         return closestNeighbor;
