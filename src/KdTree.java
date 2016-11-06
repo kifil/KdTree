@@ -8,41 +8,41 @@ public class KdTree {
     private Node root;
     private int size = 0;
 
-    //Node helper class to keep track of nodes in the tree
+    // Node helper class to keep track of nodes in the tree
     private class Node {
-        private Point2D point;      // the point
-        private RectHV rect;    // the axis-aligned rectangle corresponding to this node
-        private Node left;        // the left/bottom subtree
-        private Node right;        // the right/top subtree
-        private boolean isVertical; //whether or not the node is a vertical line
+        private Point2D point;      //  the point
+        private RectHV rect;    //  the axis-aligned rectangle corresponding to this node
+        private Node left;        //  the left/bottom subtree
+        private Node right;        //  the right/top subtree
+        private boolean isVertical; // whether or not the node is a vertical line
 
-        Node(){}
+        Node() {}
 
-        Node(Point2D newPoint, Node previousNode){
+        Node(Point2D newPoint, Node previousNode) {
             point = newPoint;
 
-            //no preivous node, this is the root
-            if(previousNode == null){
-                isVertical = true; //root starts vertical
-                rect = new RectHV(0.0,0.0,1.0,1.0); //root has unit square sized rectangle
+            // no previous node, this is the root
+            if (previousNode == null) {
+                isVertical = true; // root starts vertical
+                rect = new RectHV(0.0,0.0,1.0,1.0); // root has unit square sized rectangle
             }
             else{
-                //flip node axis
+                // flip node axis
                 isVertical = !previousNode.isVertical;
 
-                //create new containing rectangle
+                // create new containing rectangle
                 double xMin,xMax,yMin,yMax = 0.0;
 
-                if( previousNode.isVertical){
-                    //new node is horizontal, shares old vertical boundary
+                if ( previousNode.isVertical) {
+                    // new node is horizontal, shares old vertical boundary
                     yMin = previousNode.rect.ymin();
                     yMax = previousNode.rect.ymax();
-                    //point to the right or on the vertical, horizontal min changes
-                    if(previousNode.comparePoint(point) < 0){
+                    // point to the right or on the vertical, horizontal min changes
+                    if (previousNode.comparePoint(point) < 0) {
                         xMin = previousNode.point.x();
                         xMax = previousNode.rect.xmax();
                     }
-                    //else point is to the left of the vertical and horizontal max changes
+                    // else point is to the left of the vertical and horizontal max changes
                     else{
                         xMin = previousNode.rect.xmin();
                         xMax = previousNode.point.x();
@@ -50,15 +50,15 @@ public class KdTree {
                     }
                 }
                 else{
-                    //new node is vertical, shares old horizontal boundary
+                    // new node is vertical, shares old horizontal boundary
                     xMin = previousNode.rect.xmin();
                     xMax = previousNode.rect.xmax();
-                    //point above or on the horizontal
-                    if(previousNode.comparePoint(point) < 0){
+                    // point above or on the horizontal
+                    if (previousNode.comparePoint(point) < 0) {
                         yMin = previousNode.point.y();
                         yMax = previousNode.rect.ymax();
                     }
-                    else{
+                    else {
                         yMin = previousNode.rect.ymin();
                         yMax = previousNode.point.y();
                     }
@@ -68,13 +68,13 @@ public class KdTree {
             }
         }
 
-        public int comparePoint(Point2D otherPoint){
-            if(point.x() == otherPoint.x() && point.y() == otherPoint.y()){
+        public int comparePoint(Point2D otherPoint) {
+            if (point.equals(otherPoint)) {
                 return 0;
             }
-            if(isVertical){
-                //if current node is vertical, see if point falls to left or right of vertical
-                if(point.x() > otherPoint.x()){
+            if (isVertical) {
+                // if current node is vertical, see if point falls to left or right of vertical
+                if (point.x() > otherPoint.x()) {
                     return 1;
                 }
                 else{
@@ -82,7 +82,7 @@ public class KdTree {
                 }
             }
             else{
-                if(point.y() > otherPoint.y()){
+                if (point.y() > otherPoint.y()) {
                     return 1;
                 }
                 else{
@@ -92,183 +92,173 @@ public class KdTree {
         }
     }
 
-    public KdTree(){}
+    public KdTree() {}
 
-    public void insert(Point2D newPoint){
-        if(newPoint == null){
+    public void insert(Point2D newPoint) {
+        if (newPoint == null) {
             throw new java.lang.NullPointerException("argument to put() is null");
         }
-        //recursively move down tree to add new node and reset root to point at new tree
+        // recursively move down tree to add new node and reset root to point at new tree
         root = insert(root,newPoint, null);
     }
 
     private Node insert(Node currentNode, Point2D newPoint, Node previousNode) {
-        if(currentNode == null){
+        if (currentNode == null) {
             size++;
             return new Node(newPoint, previousNode);
-        } //terminate recursion by adding new node to the bottom
+        } // terminate recursion by adding new node to the bottom
 
-        //otherwsie recur down the correct branch based on point
-        if(currentNode.comparePoint(newPoint) > 0){
+        // otherwsie recur down the correct branch based on point
+        if (currentNode.comparePoint(newPoint) > 0) {
             currentNode.left = insert(currentNode.left, newPoint, currentNode);
         }
-        if(currentNode.comparePoint(newPoint) < 0){
+        if (currentNode.comparePoint(newPoint) < 0) {
             currentNode.right = insert(currentNode.right, newPoint, currentNode);
         }
 
-        //else points are equal, no need to change node's current point
+        // else points are equal, no need to change node's current point
         return currentNode;
     }
 
-    //does tree contain a certain point?
-    public boolean contains(Point2D searchPoint){
-        if(searchPoint == null){
+    // does tree contain a certain point?
+    public boolean contains(Point2D searchPoint) {
+        if (searchPoint == null) {
             throw new IllegalArgumentException("argument to contains() is null");
         }
 
         return contains(root,searchPoint);
     }
 
-    private boolean contains(Node currentNode, Point2D searchPoint){
-        if(currentNode == null){
+    private boolean contains(Node currentNode, Point2D searchPoint) {
+        if (currentNode == null) {
             return false;
-        } //terminate recursion when point is not found
+        } // terminate recursion when point is not found
 
-        //otherwsie recur down the correct branch based on point
-
-        if(currentNode.comparePoint(searchPoint) > 0){
+        // otherwise recur down the correct branch based on point
+        if (currentNode.comparePoint(searchPoint) > 0) {
             return contains(currentNode.left, searchPoint);
         }
-        if(currentNode.comparePoint(searchPoint) < 0){
+        if (currentNode.comparePoint(searchPoint) < 0) {
             return contains(currentNode.right, searchPoint);
         }
-        //else points are equal and terminate recursion
+
+        // else points are equal and terminate recursion
         return true;
     }
 
 
-    //get the nearest point in the tree to the search point
-    public Point2D nearest(Point2D searchPoint){
-        if(searchPoint == null){
+    // get the nearest point in the tree to the search point
+    public Point2D nearest(Point2D searchPoint) {
+        if (searchPoint == null) {
             throw new java.lang.NullPointerException("argument to nearest() is null");
         }
-        if(isEmpty()){
-            //not eaxactly sure what to throw here
-            throw new java.lang.NullPointerException("tree is empty for nearest()!");
-
+        if (isEmpty()) {
+            return null;
         }
 
-        Point2D closestPoint = root.point;
-
-        return nearest(root, searchPoint, closestPoint);
+        return nearest(root, searchPoint, root.point);
     }
 
 
-    private Point2D nearest(Node currentNode, Point2D searchPoint, Point2D closestPoint){
-        if(currentNode == null){
+    private Point2D nearest(Node currentNode, Point2D searchPoint, Point2D closestPoint) {
+        if (currentNode == null) {
             return closestPoint;
-        } //terminate recursion when we can't go down the tree anymore, return closest point so far
+        } // terminate recursion when we can't go down the tree anymore, return closest point so far
 
-        if(currentNode.comparePoint(searchPoint) == 0){
-            //else points are equal and terminate recursion
+        if (currentNode.comparePoint(searchPoint) == 0) {
+            // else points are equal and terminate recursion
             closestPoint = searchPoint;
             return closestPoint;
         }
 
         Double closestDistance = closestPoint.distanceTo(searchPoint);
 
-        //current node is new closest point
-        if(currentNode.point.distanceTo(searchPoint) < closestDistance){
+        // current node is new closest point
+        if (currentNode.point.distanceTo(searchPoint) < closestDistance) {
             closestPoint = currentNode.point;
             closestDistance = closestPoint.distanceTo(searchPoint);
         }
 
-        //otherwise recur down the correct branch based on point
+        // otherwise recur down the correct branch based on point
         Node firstNode = currentNode.right;
         Node secondNode = currentNode.left;
 
-        //search left node first if point is "smaller" than point at current node
-        if(currentNode.comparePoint(searchPoint) > 0 ){
+        // search left node first if point is "smaller" than point at current node
+        if (currentNode.comparePoint(searchPoint) > 0 ) {
             firstNode = currentNode.left;
             secondNode = currentNode.right;
         }
 
-        //only check down a subtree if a straight line to the containing rectangle is smaller than the closest distance found so far
-        if(firstNode  !=null && firstNode.rect.distanceSquaredTo(searchPoint) < closestDistance){
+        // only check down a subtree if a straight line to the containing rectangle is smaller than the closest distance found so far
+        if (firstNode != null && firstNode.rect.distanceSquaredTo(searchPoint) <= closestDistance) {
             closestPoint = nearest(firstNode , searchPoint, closestPoint);
             closestDistance = closestPoint.distanceTo(searchPoint);
         }
-        if(secondNode != null && secondNode.rect.distanceSquaredTo(searchPoint) < closestDistance){
+        if (secondNode != null && secondNode.rect.distanceSquaredTo(searchPoint) <= closestDistance) {
             closestPoint = nearest(secondNode, searchPoint, closestPoint);
         }
-
 
         return closestPoint;
     }
 
-
-    //get all points within a query rectangle
-    public Iterable<Point2D> range(RectHV rect){
-        if(rect == null){
+    // get all points within a query rectangle
+    public Iterable<Point2D> range(RectHV rect) {
+        if (rect == null) {
             throw new java.lang.NullPointerException("argument to nearest() is null");
         }
-        if(isEmpty()){
-            //not exactly sure what to throw here
-            throw new java.lang.NullPointerException("tree is empty for nearest()!");
 
-        }
         Stack<Point2D> pointsInRange = new Stack<Point2D>();
-
+        if (isEmpty()) {
+            return pointsInRange;
+        }
 
         return range(root, rect, pointsInRange);
     }
 
-    //might not need distance param
-    private Stack<Point2D> range(Node currentNode, RectHV queryRectangle,Stack<Point2D> pointsInRange){
-        if(currentNode == null){
+    // might not need distance param
+    private Stack<Point2D> range(Node currentNode, RectHV queryRectangle,Stack<Point2D> pointsInRange) {
+        if (currentNode == null) {
             return pointsInRange;
-        } //terminate recursion when we can't go down the tree anymore, return points in range
+        } // terminate recursion when we can't go down the tree anymore, return points in range
 
-        if(queryRectangle.contains(currentNode.point)){
-            //query rectangle contains this point, add it to the list
+        if (queryRectangle.contains(currentNode.point)) {
+            // query rectangle contains this point, add it to the list
             pointsInRange.push(currentNode.point);
         }
 
-        //otherwsie recur down the correct branch based on point
+        // otherwsie recur down the correct branch based on point
         Node firstNode = currentNode.right;
         Node secondNode = currentNode.left;
 
-        //only check down a subtree if that tree's rectangle intersects the query rectangle
-        if(firstNode  !=null && firstNode.rect.intersects(queryRectangle)){
-            pointsInRange = range(firstNode , queryRectangle, pointsInRange);
+        // only check down a subtree if that tree's rectangle intersects the query rectangle
+        if (firstNode  !=null && firstNode.rect.intersects(queryRectangle)) {
+            pointsInRange = range(firstNode, queryRectangle, pointsInRange);
         }
-        if(secondNode != null && secondNode.rect.intersects(queryRectangle)){
+        if (secondNode != null && secondNode.rect.intersects(queryRectangle)) {
             pointsInRange = range(secondNode, queryRectangle, pointsInRange);
         }
 
-        //recursion finished, return resulting points in range
+        // recursion finished, return resulting points in range
         return pointsInRange;
     }
 
-    public int size(){
+    public int size() {
         return size;
     }
 
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         return size() == 0;
     }
 
-    public void draw(){
-        if(isEmpty()){
+    public void draw() {
+        if (isEmpty()) {
             return;
         }
-
         draw(root);
-
     }
 
-    private void draw(Node currentNode){
-        if(currentNode == null){
+    private void draw(Node currentNode) {
+        if (currentNode == null) {
             return;
         }
 
@@ -278,7 +268,7 @@ public class KdTree {
         StdDraw.setPenRadius();
         double xMin,xMax,yMin,yMax = 0.0;
 
-        if(currentNode.isVertical){
+        if (currentNode.isVertical) {
             StdDraw.setPenColor(StdDraw.RED);
             xMin = currentNode.point.x();
             xMax = currentNode.point.x();
@@ -293,24 +283,23 @@ public class KdTree {
             yMax = currentNode.point.y();
         }
 
-        //create and draw new segment
+        // create and draw new segment
         StdDraw.line(xMin,yMin,xMax,yMax);
 
-        //reset pen color
+        // reset pen color
         StdDraw.setPenColor(StdDraw.BLACK);
 
-        //recur down subtrees
+        // recur down subtrees
         draw(currentNode.left);
         draw(currentNode.right);
-
     }
 
-    // unit testing of the methods (optional)
-    public static void main(String[] args){
+    //  unit testing of the methods (optional)
+    public static void main(String[] args) {
         KdTree points = new KdTree();
 
-        if(args[0] == "true") {
-            //read in file and test that way
+        if (args[0] == "true") {
+            // read in file and test that way
             In in = new In(args[1]);
             double[] inputPointCoordinates = in.readAllDoubles();
             Double xCoord = null;
@@ -331,24 +320,24 @@ public class KdTree {
             StdOut.println(points.nearest(new Point2D(0.81, 0.30)));
         }
         else{
-            //true
+            // true
             StdOut.println(points.isEmpty());
 
             points.insert(new Point2D(0.5,0.5));
 
-            //true
+            // true
             StdOut.println(points.contains(new Point2D(0.5,0.5)));
 
-            //1
+            // 1
             StdOut.println(points.size());
 
             points.insert(new Point2D(0.7,0.7));
             points.insert(new Point2D(.9,.9));
 
-            //0.5,0.5
+            // 0.5,0.5
             StdOut.println(points.nearest(new Point2D(0.2,0.2)));
 
-            //0.5,0.5 - 0.7,0.7
+            // 0.5,0.5 - 0.7,0.7
             Iterable<Point2D> pointsInRange = points.range(new RectHV(0,0,.7,.7));
             for (Point2D point: pointsInRange
                     ) {
