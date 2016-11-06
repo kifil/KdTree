@@ -2,7 +2,9 @@
 
 This is an algorithmic solution for solving for finding a point nearest to a given search point or for finding all points in a given range for very large sets of points.
 
-The solution uses a red-black binary search tree to efficiently find te nearest point or points in a given range. A brute force solution is also included. 
+The solution uses a k-dimensional tree to efficiently find te nearest point or points in a given range: https://en.wikipedia.org/wiki/K-d_tree 
+
+A brute force solution is also included. 
 
 The application follows the specs listed here: http://coursera.cs.princeton.edu/algs4/assignments/kdtree.html
 
