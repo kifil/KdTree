@@ -1,22 +1,20 @@
-import edu.princeton.cs.algs4.RectHV;
-import edu.princeton.cs.algs4.Point2D;
-import edu.princeton.cs.algs4.Stack;
-import edu.princeton.cs.algs4.StdDraw;
+import edu.princeton.cs.algs4.*;
 
 /**
  * Created by User on 11/3/2016.
  */
-public class kdTree {
-    private Node root;
-    private int size = 0;;
 
-    //make this implement comparator for clarity, cant cjust use point comparators since it fails when lines is horizontal
+public class KdTree {
+    private Node root;
+    private int size = 0;
+
+    //Node helper class to keep track of nodes in the tree
     private class Node {
         private Point2D point;      // the point
         private RectHV rect;    // the axis-aligned rectangle corresponding to this node
         private Node left;        // the left/bottom subtree
         private Node right;        // the right/top subtree
-        private boolean isVertical;
+        private boolean isVertical; //whether or not the node is a vertical line
 
         Node(){}
 
@@ -40,7 +38,7 @@ public class kdTree {
                     yMin = previousNode.rect.ymin();
                     yMax = previousNode.rect.ymax();
                     //point to the right or on the vertical, horizontal min changes
-                    if(previousNode.comparePoint(point) > 0){
+                    if(previousNode.comparePoint(point) < 0){
                         xMin = previousNode.point.x();
                         xMax = previousNode.rect.xmax();
                     }
@@ -56,7 +54,7 @@ public class kdTree {
                     xMin = previousNode.rect.xmin();
                     xMax = previousNode.rect.xmax();
                     //point above or on the horizontal
-                    if(previousNode.comparePoint(point)> 0){
+                    if(previousNode.comparePoint(point) < 0){
                         yMin = previousNode.point.y();
                         yMax = previousNode.rect.ymax();
                     }
@@ -76,7 +74,7 @@ public class kdTree {
             }
             if(isVertical){
                 //if current node is vertical, see if point falls to left or right of vertical
-                if(point.x() >= otherPoint.x()){
+                if(point.x() > otherPoint.x()){
                     return 1;
                 }
                 else{
@@ -84,46 +82,45 @@ public class kdTree {
                 }
             }
             else{
-                if(point.y() >= otherPoint.y()){
+                if(point.y() > otherPoint.y()){
                     return 1;
                 }
                 else{
                     return -1;
                 }
-
             }
-
         }
     }
 
-    public kdTree(){}
+    public KdTree(){}
 
-    public void put(Point2D newPoint){
+    public void insert(Point2D newPoint){
         if(newPoint == null){
             throw new java.lang.NullPointerException("argument to put() is null");
         }
         //recursively move down tree to add new node and reset root to point at new tree
-        root = put(root,newPoint, null);
+        root = insert(root,newPoint, null);
     }
 
-    private Node put(Node currentNode, Point2D newPoint, Node previousNode) {
+    private Node insert(Node currentNode, Point2D newPoint, Node previousNode) {
         if(currentNode == null){
             size++;
             return new Node(newPoint, previousNode);
         } //terminate recursion by adding new node to the bottom
 
         //otherwsie recur down the correct branch based on point
-        if(currentNode.comparePoint(newPoint) < 0){
-            currentNode.left = put(currentNode.left, newPoint, currentNode);
-        }
         if(currentNode.comparePoint(newPoint) > 0){
-            currentNode.right = put(currentNode.right, newPoint, currentNode);
+            currentNode.left = insert(currentNode.left, newPoint, currentNode);
+        }
+        if(currentNode.comparePoint(newPoint) < 0){
+            currentNode.right = insert(currentNode.right, newPoint, currentNode);
         }
 
         //else points are equal, no need to change node's current point
         return currentNode;
     }
 
+    //does tree contain a certain point?
     public boolean contains(Point2D searchPoint){
         if(searchPoint == null){
             throw new IllegalArgumentException("argument to contains() is null");
@@ -139,10 +136,10 @@ public class kdTree {
 
         //otherwsie recur down the correct branch based on point
 
-        if(currentNode.comparePoint(searchPoint) < 0){
+        if(currentNode.comparePoint(searchPoint) > 0){
             return contains(currentNode.left, searchPoint);
         }
-        if(currentNode.comparePoint(searchPoint) > 0){
+        if(currentNode.comparePoint(searchPoint) < 0){
             return contains(currentNode.right, searchPoint);
         }
         //else points are equal and terminate recursion
@@ -150,6 +147,7 @@ public class kdTree {
     }
 
 
+    //get the nearest point in the tree to the search point
     public Point2D nearest(Point2D searchPoint){
         if(searchPoint == null){
             throw new java.lang.NullPointerException("argument to nearest() is null");
@@ -165,7 +163,7 @@ public class kdTree {
         return nearest(root, searchPoint, closestPoint);
     }
 
-    //might not need distance param
+
     private Point2D nearest(Node currentNode, Point2D searchPoint, Point2D closestPoint){
         if(currentNode == null){
             return closestPoint;
@@ -185,12 +183,12 @@ public class kdTree {
             closestDistance = closestPoint.distanceTo(searchPoint);
         }
 
-        //otherwsie recur down the correct branch based on point
+        //otherwise recur down the correct branch based on point
         Node firstNode = currentNode.right;
         Node secondNode = currentNode.left;
 
         //search left node first if point is "smaller" than point at current node
-        if(currentNode.comparePoint(searchPoint) < 0 ){
+        if(currentNode.comparePoint(searchPoint) > 0 ){
             firstNode = currentNode.left;
             secondNode = currentNode.right;
         }
@@ -209,7 +207,7 @@ public class kdTree {
     }
 
 
-
+    //get all points within a query rectangle
     public Iterable<Point2D> range(RectHV rect){
         if(rect == null){
             throw new java.lang.NullPointerException("argument to nearest() is null");
@@ -304,6 +302,61 @@ public class kdTree {
         //recur down subtrees
         draw(currentNode.left);
         draw(currentNode.right);
+
+    }
+
+    // unit testing of the methods (optional)
+    public static void main(String[] args){
+        KdTree points = new KdTree();
+
+        if(args[0] == "true") {
+            //read in file and test that way
+            In in = new In(args[1]);
+            double[] inputPointCoordinates = in.readAllDoubles();
+            Double xCoord = null;
+            Double yCoord = null;
+
+            for (double inputPointCoordinate : inputPointCoordinates) {
+                if (xCoord == null) {
+                    xCoord = inputPointCoordinate;
+                } else if (yCoord == null) {
+                    yCoord = inputPointCoordinate;
+                    points.insert(new Point2D(xCoord, yCoord));
+                    xCoord = null;
+                    yCoord = null;
+                }
+            }
+
+            StdOut.println(points.size());
+            StdOut.println(points.nearest(new Point2D(0.81, 0.30)));
+        }
+        else{
+            //true
+            StdOut.println(points.isEmpty());
+
+            points.insert(new Point2D(0.5,0.5));
+
+            //true
+            StdOut.println(points.contains(new Point2D(0.5,0.5)));
+
+            //1
+            StdOut.println(points.size());
+
+            points.insert(new Point2D(0.7,0.7));
+            points.insert(new Point2D(.9,.9));
+
+            //0.5,0.5
+            StdOut.println(points.nearest(new Point2D(0.2,0.2)));
+
+            //0.5,0.5 - 0.7,0.7
+            Iterable<Point2D> pointsInRange = points.range(new RectHV(0,0,.7,.7));
+            for (Point2D point: pointsInRange
+                    ) {
+                StdOut.println(point);
+            }
+        }
+
+        points.draw();
 
     }
 

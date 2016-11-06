@@ -1,6 +1,4 @@
-import edu.princeton.cs.algs4.Point2D;
-import edu.princeton.cs.algs4.RectHV;
-import edu.princeton.cs.algs4.StdDraw;
+import edu.princeton.cs.algs4.*;
 
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -28,6 +26,9 @@ public class PointSET {
 
     // add the point to the set (if it is not already in the set)
     public void insert(Point2D p){
+        if(p == null){
+            throw new NullPointerException();
+        }
 
         //may not even need this contains
         if(!pointBinaryTree.contains(p)){
@@ -37,6 +38,9 @@ public class PointSET {
 
     // does the set contain point p?
     public boolean contains(Point2D p)      {
+        if(p == null){
+            throw new NullPointerException();
+        }
         return  pointBinaryTree.contains(p);
     }
 
@@ -54,38 +58,21 @@ public class PointSET {
 
     // all points that are inside the rectangle
     public Iterable<Point2D> range(RectHV rect){
+        if(rect == null){
+            throw new NullPointerException();
+        }
 
         //get all points in range (inclusive)
-        Iterable<Point2D>  pointsInRange = pointBinaryTree.subSet(new Point2D(rect.xmin(), rect.ymin()), true, new Point2D(rect.xmax(), rect.ymax()), true);
+        Iterable<Point2D>  pointsInRange = pointBinaryTree.subSet(new Point2D(rect.xmin(), rect.ymin()), false, new Point2D(rect.xmax(), rect.ymax()), false);
         return pointsInRange;
     }
 
     // a nearest neighbor in the set to point p; null if the set is empty
-//    public Point2D nearest(Point2D p) {
-//        if(pointBinaryTree.isEmpty()){
-//            return null;
-//        }
-//
-//        Point2D ceilingPoint  = pointBinaryTree.ceiling(p); //returns first point greater than OR EQUAL TO current point
-//        Point2D lowerPoint = pointBinaryTree.lower(p); //returns first point strictly less than current point
-//
-//        Double closestPointDistance = Double.POSITIVE_INFINITY;
-//        Point2D closestNeighbor = null;
-//
-//        if(ceilingPoint != null){
-//            closestPointDistance = ceilingPoint.distanceTo(p);
-//            closestNeighbor = ceilingPoint;
-//        }
-//
-//        if(lowerPoint != null && lowerPoint.distanceTo(p) < closestPointDistance){
-//            closestNeighbor = lowerPoint;
-//        }
-//
-//        return closestNeighbor;
-//    }
-
-    // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
+        if(p == null){
+            throw new NullPointerException();
+        }
+
         if(pointBinaryTree.isEmpty()){
             return null;
         }
@@ -105,6 +92,56 @@ public class PointSET {
 
     // unit testing of the methods (optional)
     public static void main(String[] args){
+        PointSET points = new PointSET();
+
+        if(args[0] == "true") {
+            //read in file and test that way
+            In in = new In(args[1]);
+            double[] inputPointCoordinates = in.readAllDoubles();
+            Double xCoord = null;
+            Double yCoord = null;
+
+            for (double inputPointCoordinate : inputPointCoordinates) {
+                if (xCoord == null) {
+                    xCoord = inputPointCoordinate;
+                } else if (yCoord == null) {
+                    yCoord = inputPointCoordinate;
+                    points.insert(new Point2D(xCoord, yCoord));
+                    xCoord = null;
+                    yCoord = null;
+                }
+            }
+
+            StdOut.println(points.size());
+            StdOut.println(points.nearest(new Point2D(0.2,0.2)));
+        }
+        else{
+            //true
+            StdOut.println(points.isEmpty());
+
+            points.insert(new Point2D(0.5,0.5));
+
+            //true
+            StdOut.println(points.contains(new Point2D(0.5,0.5)));
+
+            //1
+            StdOut.println(points.size());
+
+            points.insert(new Point2D(0.7,0.7));
+            points.insert(new Point2D(1,1));
+
+            //0.5,0.5
+            StdOut.println(points.nearest(new Point2D(0.2,0.2)));
+
+            //0.5,0.5 - 0.7,0.7
+            Iterable<Point2D> pointsInRange = points.range(new RectHV(0.0,0.0,0.0000000001,0.0000000001));
+            for (Point2D point: pointsInRange
+                    ) {
+                StdOut.println(point);
+            }
+        }
+
+        points.draw();
 
     }
 }
